@@ -1,0 +1,76 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Data and large datasets (1.2 GB CXR images)
+data/
+data_clean/
+data_backup_leaked/
+
+# Large Model Weights (>100MB files rejected by GitHub)
+*.h5
+*.hdf5
+*.keras
+*.tflite
+*.pb
+*.pth
+*.pt
+*.pkl
+*.joblib
+models/**/*.h5
+models/*.h5
+models/current/finetune_logs/
+models/current/logs/
+
+# Explicitly track model metadata & architectures
+!models/current/*.json
+!models/README.md
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Development, testing, caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.cache/
+nosetests.xml
+coverage.xml
+
+# Knowledge graph & agent caches
+graphify-out/
+.agents/
+
+# Temporary directories
+scratch/
+uploads/
+predictions/
+tmp/
+temp/
+*.tmp
+
+# Operating System & IDE clutter
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
