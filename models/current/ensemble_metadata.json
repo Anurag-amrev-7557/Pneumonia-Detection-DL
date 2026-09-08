@@ -1,0 +1,15 @@
+{
+  "model_type": "ensemble_resnet50_densenet121",
+  "weights": {
+    "resnet50": 0.5,
+    "densenet121": 0.5
+  },
+  "test_metrics": {
+    "balanced_accuracy": 0.9567765567765568,
+    "raw_accuracy": 0.9416666666666667,
+    "auc": 0.9935238095238096,
+    "specificity_normal": 0.9897435897435898,
+    "sensitivity_pneumonia": 0.9238095238095239,
+    "macro_f1": 0.9301835912969598
+  }
+}

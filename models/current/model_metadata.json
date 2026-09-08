@@ -1,0 +1,27 @@
+{
+  "model_type": "resnet50",
+  "epochs_trained": 28,
+  "training_date": "2026-09-08T12:02:11.420569+00:00",
+  "test_metrics": {
+    "accuracy": 0.9540033936500549,
+    "precision": 0.9540033936500549,
+    "recall": 0.9540033936500549,
+    "auc": 0.9918622374534607,
+    "loss": 0.12246798723936081
+  },
+  "hyperparameters": {
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "epochs_requested": 50,
+    "base_frozen": true,
+    "class_weights": {
+      "0": 1.8499210110584519,
+      "1": 0.6851960210649503
+    }
+  },
+  "dataset": {
+    "training_samples": 4684,
+    "validation_samples": 585,
+    "test_samples": 587
+  }
+}
