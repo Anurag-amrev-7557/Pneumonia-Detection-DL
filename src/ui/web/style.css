@@ -1,0 +1,91 @@
+/* PULMO·AI WCAG AAA Contrast Verified Stylesheet */
+
+/* High Contrast Minimal Scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E2E8F0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #64748B;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Radiograph Canvas on Clean Light Diagnostic Lightbox */
+#pacsCanvas {
+  touch-action: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  background-color: #F1F5F9;
+}
+
+/* Sample Cards with High Contrast Focus States */
+.sample-card {
+  transition: all 0.15s ease-in-out;
+  border: 1.5px solid #CBD5E1;
+}
+
+.sample-card:hover {
+  border-color: #1E40AF !important;
+  background-color: #F8FAFC !important;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.sample-card.active {
+  border-color: #1E40AF !important;
+  background-color: #EFF6FF !important;
+  box-shadow: 0 0 0 2px #1E40AF;
+}
+
+/* Alpha Range Slider with High Contrast Thumb */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #1D4ED8;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.4);
+  border: 2px solid #FFFFFF;
+}
+
+input[type=range]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #1D4ED8;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.4);
+  border: 2px solid #FFFFFF;
+}
+
+/* High Contrast Print Stylesheet */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printableContent, #printableContent * {
+    visibility: visible;
+  }
+  #printableContent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: #000000;
+    background: #FFFFFF !important;
+  }
+  #printableContent .bg-slate-100,
+  #printableContent .bg-slate-50 {
+    background: #F1F5F9 !important;
+    border-color: #000000 !important;
+  }
+}
