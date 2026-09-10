@@ -1,0 +1,9 @@
+# Graphify ignore rules
+data/
+data_backup_leaked/
+models/
+scratch/
+uploads/
+venv/
+.pytest_cache/
+*.ipynb
