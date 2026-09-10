@@ -1,6 +1,5 @@
 # GitHub Linguist language overrides
 # Exclude Jupyter Notebooks from language statistics so Python is recognized as primary
-*.ipynb linguist-detectable=false
-*.ipynb linguist-documentation=true
-notebooks/** linguist-documentation=true
+*.ipynb linguist-vendored
+notebooks/** linguist-vendored
 
