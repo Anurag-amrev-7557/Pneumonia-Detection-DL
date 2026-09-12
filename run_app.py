@@ -34,15 +34,32 @@ def main():
         print(f"✅ Secondary Backbone:  {model_secondary.name} ({model_secondary.stat().st_size / (1024*1024):.1f} MB)")
     else:
         print("⚠️  Secondary Backbone:  Not found (falling back to single-backbone mode)")
-        
-    print("\n🚀 Starting PACS Diagnostic Server on http://127.0.0.1:8000 ...")
+    import os
+    import socket
+
+    def get_port(preferred=8000):
+        # HF Spaces injects $PORT (7860); respect it if set
+        env_port = os.environ.get("PORT")
+        if env_port:
+            return int(env_port)
+        for p in [preferred, 8080, 8001, 8081]:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                if s.connect_ex(('127.0.0.1', p)) != 0:
+                    return p
+        return preferred
+
+    # Bind to 0.0.0.0 so HF Spaces (and Docker in general) can route traffic in.
+    # Locally this still works fine — just access via 127.0.0.1.
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = get_port(8000)
+    print(f"\n🚀 Starting PACS Diagnostic Server on http://{host}:{port} ...")
     print("   Press Ctrl+C to stop.\n")
 
     import uvicorn
     uvicorn.run(
         "src.api.server:app",
-        host="127.0.0.1",
-        port=8000,
+        host=host,
+        port=port,
         log_level="info",
         access_log=True,
     )

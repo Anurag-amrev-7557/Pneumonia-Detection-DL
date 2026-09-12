@@ -263,6 +263,11 @@ needs_init = (
 
 if needs_init:
     try:
+        # ── Cloud deployment: download weights from HF Hub if not present ──
+        from src.utils.model_loader import ensure_models_downloaded
+        with st.spinner("⏳ Loading model weights — first launch may take ~60s..."):
+            ensure_models_downloaded()
+
         model_path = settings.inference.model_path
         if model_path.exists():
             st.session_state.detector = PneumoniaDetector(str(model_path))

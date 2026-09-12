@@ -1,0 +1,47 @@
+# ── .dockerignore for PULMO·AI HF Spaces build ───────────────────────────────
+# Keeps the build context lean; model .h5 files are copied explicitly via COPY.
+
+# Training data (large — not needed at inference time)
+data/train/
+data/val/
+data/feedback_audit.jsonl
+
+# Python env & caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Dev / research artefacts
+notebooks/
+graphify-out/
+.agents/
+scripts/
+tests/
+uploads/
+tmp/
+temp/
+
+# IDE & OS noise
+.git/
+.gitignore
+.gitattributes
+.DS_Store
+.env
+.env.example
+*.swp
+*~
+
+# Fine-tuned weights (use base ensemble only to keep image size down)
+models/current/finetuned_best_model.h5
+models/current/finetune_logs/
+models/current/logs/
+
+# Docs
+README.md
+LICENSE

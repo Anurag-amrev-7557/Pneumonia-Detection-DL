@@ -4,7 +4,8 @@ keras==2.13.1
 numpy<2.0,>=1.21.0
 
 # Image Processing
-opencv-python>=4.8.0
+# opencv-python-headless: no GUI needed on Streamlit Cloud / Docker
+opencv-python-headless>=4.8.0
 scikit-image>=0.21.0
 Pillow>=10.0.0
 
@@ -32,6 +33,9 @@ seaborn>=0.12.0
 python-dotenv>=1.0.0
 tqdm>=4.65.0
 Kaggle>=1.5.12
+
+# Cloud model download (weights hosted on HF Hub)
+huggingface_hub>=0.23.0
 
 # Development & Testing
 pytest>=7.4.0
