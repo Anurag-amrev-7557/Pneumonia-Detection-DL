@@ -132,6 +132,12 @@ class TFLiteDetector:
         primary_output = self.interpreter.get_tensor(self.output_details[0]["index"])[0]
 
         # Ensemble with secondary model if available
+        breakdown = {
+            "ResNet-50": {
+                self.CLASSES[i]: float(primary_output[i]) for i in range(len(self.CLASSES))
+            }
+        }
+
         if self.secondary_interpreter is not None:
             self.secondary_interpreter.set_tensor(
                 self.secondary_interpreter.get_input_details()[0]["index"],
@@ -141,6 +147,9 @@ class TFLiteDetector:
             secondary_output = self.secondary_interpreter.get_tensor(
                 self.secondary_interpreter.get_output_details()[0]["index"]
             )[0]
+            breakdown["DenseNet-121"] = {
+                self.CLASSES[i]: float(secondary_output[i]) for i in range(len(self.CLASSES))
+            }
             # Equal-weight soft voting
             final_probs = 0.5 * primary_output + 0.5 * secondary_output
             model_name = "ResNet-50 + DenseNet-121 (TFLite Ensemble)"
@@ -170,6 +179,7 @@ class TFLiteDetector:
             "model_name": model_name,
             "processing_time": elapsed_ms,
             "crop_margins_applied": crop_margins,
+            "breakdown": breakdown,
             # GradCAM not supported in TFLite — return None so UI degrades gracefully
             "gradcam": None,
             "raw_heatmap": None,
