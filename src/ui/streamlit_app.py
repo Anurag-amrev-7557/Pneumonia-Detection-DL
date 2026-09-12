@@ -1,6 +1,7 @@
 """
-PULMO·AI — Clinical Chest X-Ray Pneumonia Detection
-Professional diagnostic interface powered by dual-backbone ensemble.
+PULMO·AI™ Enterprise CXR Platform
+Enterprise-Grade Deep Learning Radiology & Pneumonia Triage Cloud.
+Powered by CheXNet Dual-Backbone Architecture (ResNet-50 + DenseNet-121).
 """
 
 import base64
@@ -26,14 +27,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.config.settings import settings
 # TFLiteDetector is imported dynamically in the init block below
 
-# ──────────────────────────────────────────────────────────────────────────
-# PAGE CONFIGURATION
-# ──────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
+# PAGE CONFIGURATION & METADATA
+# -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="PULMO·AI | CXR Diagnostics",
+    page_title="PULMO·AI™ Enterprise | Clinical CXR Suite",
     page_icon="🫁",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # -----------------------------------------------------------------------------
