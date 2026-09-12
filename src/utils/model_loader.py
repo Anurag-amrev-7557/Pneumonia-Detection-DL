@@ -14,7 +14,12 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 HF_REPO_ID = "Anurag234/pulmo-ai-weights"
-MODELS_DIR = Path("models/current")
+
+# Use absolute path anchored to this file's location so it works regardless
+# of the working directory (important on Streamlit Cloud)
+_SRC_UTILS_DIR = Path(__file__).resolve().parent        # src/utils/
+_PROJECT_ROOT   = _SRC_UTILS_DIR.parent.parent          # project root
+MODELS_DIR      = _PROJECT_ROOT / "models" / "current"
 
 # Map of local filename → filename on HF Hub
 # Using TFLite (lightweight) instead of full .h5 for Streamlit Cloud (1GB RAM)

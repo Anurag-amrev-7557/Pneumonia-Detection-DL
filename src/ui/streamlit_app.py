@@ -258,26 +258,32 @@ needs_init = (
 if needs_init:
     try:
         # Cloud deployment: download TFLite weights from HF Hub if not present
-        from src.utils.model_loader import ensure_models_downloaded
+        from src.utils.model_loader import ensure_models_downloaded, MODELS_DIR
         from src.models.tflite_inference import TFLiteDetector
 
         with st.spinner("⏳ Loading model weights — first launch may take ~60s..."):
-            ensure_models_downloaded()
+            ok = ensure_models_downloaded()
 
-        model_path = settings.inference.model_path.with_suffix(".tflite")
-        secondary_path = settings.inference.secondary_model_path.with_suffix(".tflite")
-        
-        if model_path.exists():
-            st.session_state.detector = TFLiteDetector(
-                model_path=model_path,
-                secondary_model_path=secondary_path if secondary_path.exists() else None
-            )
-            st.session_state.model_loaded = True
-        else:
+        if not ok:
             st.session_state.model_loaded = False
+            st.session_state.error = "Model download failed. Check HF Hub connectivity."
+        else:
+            model_path = MODELS_DIR / "best_model.tflite"
+            secondary_path = MODELS_DIR / "densenet121_best.tflite"
+
+            if model_path.exists():
+                st.session_state.detector = TFLiteDetector(
+                    model_path=model_path,
+                    secondary_model_path=secondary_path if secondary_path.exists() else None
+                )
+                st.session_state.model_loaded = True
+            else:
+                st.session_state.model_loaded = False
+                st.session_state.error = f"Model file not found at {model_path}"
     except Exception as e:
+        import traceback
         st.session_state.model_loaded = False
-        st.session_state.error = str(e)
+        st.session_state.error = f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
 
 # Load verified metadata
 metadata_path = Path("models/current/ensemble_metadata.json")
@@ -450,7 +456,9 @@ def page_predict():
     )
 
     if not st.session_state.model_loaded:
-        st.error("❌ Diagnostic Engine Not Loaded. Please verify model weights in models/current/.")
+        st.error("❌ Diagnostic Engine Not Loaded.")
+        err = st.session_state.get("error", "Unknown error")
+        st.code(err, language="text")
         return
 
     # Pre-defined Clinical Demo Samples
