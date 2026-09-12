@@ -1,8 +1,9 @@
 # Minimal requirements for Streamlit Cloud (1 GB RAM limit)
-# Use TFLite + pre-converted models instead of full TensorFlow
+# Use TensorFlow Lite models with minimal TensorFlow footprint
 
-# Core inference (lightweight)
-tflite-runtime>=2.14.0
+# TensorFlow with only CPU support (avoids large GPU libraries)
+# This is much lighter than full tensorflow  (single wheel, not multi-file)
+tensorflow-cpu==2.15.0
 
 # Image processing
 opencv-python-headless>=4.8.0

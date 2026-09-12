@@ -1,7 +1,8 @@
 """
 Lightweight TFLite-based inference engine for Streamlit Cloud deployment.
 
-Uses tflite-runtime instead of full TensorFlow, drastically reducing RAM footprint.
+Uses TensorFlow's built-in tf.lite module for model inference,
+with minimal memory footprint compared to full model loading.
 """
 
 import logging
@@ -11,11 +12,7 @@ from typing import Any, Dict
 
 import numpy as np
 from PIL import Image
-
-try:
-    import tflite_runtime.interpreter as tflite
-except ImportError:
-    import tensorflow.lite as tflite
+import tensorflow as tf
 
 logger = logging.getLogger(__name__)
 
@@ -62,9 +59,9 @@ class TFLiteDetector:
         logger.info(f"Initialized TFLite detector with model: {self.model_path}")
 
     def _load_tflite_model(self, model_path: Path):
-        """Load a TFLite model file."""
+        """Load a TFLite model file using TensorFlow's lite interpreter."""
         try:
-            interpreter = tflite.Interpreter(model_path=str(model_path))
+            interpreter = tf.lite.Interpreter(model_path=str(model_path))
             interpreter.allocate_tensors()
             logger.info(f"Loaded TFLite model: {model_path}")
             return interpreter
