@@ -73,7 +73,9 @@ class TFLiteDetector:
         self,
         image_input: str | Path | Any,
         return_probabilities: bool = True,
+        return_gradcam: bool = False,   # accepted but ignored — TFLite has no GradCAM
         confidence_threshold: float | None = None,
+        crop_margins: bool = False,
     ) -> Dict[str, Any]:
         """
         Make prediction on image input.
@@ -81,14 +83,16 @@ class TFLiteDetector:
         Args:
             image_input: Path to image file or PIL Image
             return_probabilities: Whether to return class probabilities
+            return_gradcam: Accepted for API compatibility; ignored (TFLite has no GradCAM)
             confidence_threshold: Optional override for decision threshold
+            crop_margins: If True, crops 6%/7% from edges to remove lead markers
 
         Returns:
             dict: Prediction result with label, confidence, probabilities
         """
         start_time = time.perf_counter()
 
-        # Load and preprocess image
+        # Load image
         try:
             if isinstance(image_input, (str, Path)):
                 pil_img = Image.open(str(image_input)).convert("RGB")
@@ -99,6 +103,15 @@ class TFLiteDetector:
         except Exception as e:
             logger.error(f"Error loading image: {e}")
             raise ValueError(f"Could not process image: {e}")
+
+        # Optional margin crop to remove radiograph lead markers
+        if crop_margins:
+            w, h = pil_img.size
+            left   = int(w * 0.07)
+            right  = int(w * 0.93)
+            top    = int(h * 0.06)
+            bottom = int(h * 0.94)
+            pil_img = pil_img.crop((left, top, right, bottom))
 
         # Resize and normalize
         img_resized = pil_img.resize(self.image_size, Image.BILINEAR)
@@ -140,14 +153,20 @@ class TFLiteDetector:
         confidence = p_pneumonia if is_pneumonia else float(final_probs[0])
 
         result = {
+            "label": self.CLASSES.get(predicted_class, "Unknown"),
             "class": self.CLASSES.get(predicted_class, "Unknown"),
             "class_index": predicted_class,
             "confidence": confidence,
             "is_pneumonia": is_pneumonia,
             "is_confident": bool(confidence >= 0.65),
+            "is_borderline": bool(0.35 <= p_pneumonia <= 0.65),
             "threshold_used": active_threshold,
             "model_name": model_name,
             "processing_time": elapsed_ms,
+            "crop_margins_applied": crop_margins,
+            # GradCAM not supported in TFLite — return None so UI degrades gracefully
+            "gradcam": None,
+            "raw_heatmap": None,
         }
 
         if return_probabilities:
