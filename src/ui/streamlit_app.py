@@ -576,16 +576,25 @@ def page_predict():
                 result = st.session_state.get("last_prediction")
 
             if result is not None:
-                # Extract image array
+                # Extract image array for display
                 raw_img = result.get("input_image_rgb")
                 if raw_img is None:
-                    raw_img = np.array(Image.open(active_input).convert("RGB"))
+                    try:
+                        if hasattr(active_input, "read"):
+                            active_input.seek(0)
+                            raw_img = np.array(Image.open(active_input).convert("RGB"))
+                        else:
+                            raw_img = np.array(Image.open(active_input).convert("RGB"))
+                    except Exception:
+                        raw_img = None
 
-                if invert_grayscale:
+                if invert_grayscale and raw_img is not None:
                     raw_img = 255 - raw_img
 
                 # Display Viewport
-                if show_gradcam and "raw_heatmap" in result:
+                if raw_img is None:
+                    st.info("Image preview unavailable.")
+                elif show_gradcam and result.get("raw_heatmap") is not None:
                     blended_cam = blend_heatmap_custom(raw_img, result["raw_heatmap"], gradcam_opacity)
                     v_col1, v_col2 = st.columns(2)
                     with v_col1:
@@ -595,7 +604,8 @@ def page_predict():
                         st.markdown(f"<div style='font-size:12px; font-weight:700; color:#38BDF8; margin-bottom:4px;'>GRAD-CAM ATTENTION ({int(gradcam_opacity*100)}%)</div>", unsafe_allow_html=True)
                         st.image(blended_cam, width="stretch")
                 else:
-                    st.image(raw_img, width="stretch")
+                    if raw_img is not None:
+                        st.image(raw_img, width="stretch")
 
         else:
             st.info("👆 Upload an X-ray or click any of the 1-Click Clinical Demo Samples above to begin diagnostic inspection.")
