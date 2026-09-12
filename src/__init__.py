@@ -9,14 +9,6 @@ __version__ = "1.0.0"
 __author__ = "Anurag"
 __email__ = "your.email@example.com"
 
-from src.config.settings import settings
-from src.models.architectures import ModelFactory
-from src.models.inference import PneumoniaDetector
-from src.utils.image_processing import ImageProcessor
-
-__all__ = [
-    'ImageProcessor',
-    'ModelFactory',
-    'PneumoniaDetector',
-    'settings',
-]
+# Imports are intentionally deferred — TensorFlow modules are heavy and
+# should only be imported when explicitly needed (e.g. training scripts).
+# The Streamlit app imports src.models.tflite_inference directly.

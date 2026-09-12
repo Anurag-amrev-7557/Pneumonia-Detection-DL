@@ -5,8 +5,6 @@ Powered by CheXNet Dual-Backbone Architecture (ResNet-50 + DenseNet-121).
 """
 
 import base64
-import importlib
-import inspect
 import io
 import json
 import sys
@@ -27,9 +25,7 @@ from PIL import Image, ImageOps
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.config.settings import settings
-import src.models.inference
-importlib.reload(src.models.inference)
-# TFLiteDetector will be imported dynamically in init block
+# TFLiteDetector is imported dynamically in the init block below
 
 # -----------------------------------------------------------------------------
 # PAGE CONFIGURATION & METADATA
@@ -255,18 +251,16 @@ st.markdown("""
 # ENGINE & SESSION STATE INITIALIZATION
 # -----------------------------------------------------------------------------
 needs_init = (
-    'detector' not in st.session_state 
-    or not hasattr(st.session_state, 'detector')
-    or type(st.session_state.detector) is not PneumoniaDetector
-    or inspect.signature(st.session_state.detector.predict) != inspect.signature(PneumoniaDetector.predict)
+    'detector' not in st.session_state
+    or st.session_state.get('detector') is None
 )
 
 if needs_init:
     try:
-# ── Cloud deployment: download weights from HF Hub if not present ──
+        # Cloud deployment: download TFLite weights from HF Hub if not present
         from src.utils.model_loader import ensure_models_downloaded
         from src.models.tflite_inference import TFLiteDetector
-        
+
         with st.spinner("⏳ Loading model weights — first launch may take ~60s..."):
             ensure_models_downloaded()
 
