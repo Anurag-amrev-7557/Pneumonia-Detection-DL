@@ -1,23 +1,22 @@
-# Minimal requirements for Streamlit Cloud (1 GB RAM limit)
-# Use TensorFlow Lite models with minimal TensorFlow footprint
+# Ultra-minimal requirements for Streamlit Cloud
+# Avoid TensorFlow altogether — use scikit-learn + ONNX for inference
 
-# TensorFlow with only CPU support (avoids large GPU libraries)
-# This is much lighter than full tensorflow  (single wheel, not multi-file)
-tensorflow-cpu==2.15.0
-
-# Image processing
+# Image processing (already available on Streamlit Cloud)
 opencv-python-headless>=4.8.0
 Pillow>=10.0.0
-scikit-image>=0.21.0
 numpy>=1.24.0,<2.0
 
 # Web UI
 streamlit>=1.28.0
 streamlit-option-menu>=0.3.6
 
+# Model inference (lightweight)
+scikit-learn>=1.3.0
+skl2onnx>=1.13.0
+onnxruntime>=1.16.0
+
 # Data science
 pandas>=2.0.0
-scikit-learn>=1.3.0
 plotly>=5.15.0
 matplotlib>=3.7.0
 seaborn>=0.12.0

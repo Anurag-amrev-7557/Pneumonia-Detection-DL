@@ -161,6 +161,7 @@ def serve_index():
 
 
 @app.get("/api/health")
+@app.get("/api/status")
 def get_health():
     """System health and model readiness check."""
     try:

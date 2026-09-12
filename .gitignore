@@ -6,12 +6,6 @@ __pycache__/
 # C extensions
 *.so
 
-# ── Explicitly allow the 4 demo sample images (not the full dataset) ──────────
-!data/test/NORMAL/IM-0341-0001.jpeg
-!data/test/PNEUMONIA/person1619_bacteria_4261.jpeg
-!data/test/PNEUMONIA/person478_virus_975.jpeg
-!data/test/PNEUMONIA/person1014_bacteria_2945.jpeg
-
 # Data and large datasets (1.2 GB CXR images)
 data/
 data_clean/
