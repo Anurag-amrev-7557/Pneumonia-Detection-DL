@@ -461,12 +461,15 @@ def page_predict():
         st.code(err, language="text")
         return
 
-    # Pre-defined Clinical Demo Samples
+    # Project root — used to make demo sample paths absolute
+    _APP_ROOT = Path(__file__).resolve().parent.parent.parent
+
+    # Pre-defined Clinical Demo Samples (all from data/test/ — committed to git)
     demo_samples = {
-        "🟢 Sample 1: Normal Adult": "data/test/NORMAL/IM-0341-0001.jpeg",
-        "🔴 Sample 2: Bacterial Lobar": "data/test/PNEUMONIA/person1619_bacteria_4261.jpeg",
+        "🟢 Sample 1: Normal Adult":      "data/test/NORMAL/IM-0341-0001.jpeg",
+        "🔴 Sample 2: Bacterial Lobar":   "data/test/PNEUMONIA/person1619_bacteria_4261.jpeg",
         "🟣 Sample 3: Viral Interstitial": "data/test/PNEUMONIA/person478_virus_975.jpeg",
-        "🟡 Sample 4: Subtle Pediatric": "data/val/PNEUMONIA/person35_bacteria_178.jpeg"
+        "🟡 Sample 4: Subtle Pediatric":  "data/test/PNEUMONIA/person1014_bacteria_2945.jpeg",
     }
 
     # Top Control Bar
@@ -482,7 +485,8 @@ def page_predict():
     for idx, (label, path_str) in enumerate(demo_samples.items()):
         with demo_cols[idx]:
             if st.button(label, key=f"demo_btn_{idx}", width="stretch"):
-                st.session_state["active_scan_path"] = path_str
+                abs_path = str(_APP_ROOT / path_str)
+                st.session_state["active_scan_path"] = abs_path
                 st.session_state["active_scan_name"] = Path(path_str).name
                 st.session_state.pop("active_scan_file", None)
 
