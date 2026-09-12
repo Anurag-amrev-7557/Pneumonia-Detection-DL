@@ -1,16 +1,3 @@
----
-title: PULMO·AI — Pneumonia Detection Workstation
-emoji: 🫁
-colorFrom: blue
-colorTo: indigo
-sdk: streamlit
-sdk_version: 1.28.0
-app_file: app.py
-pinned: true
-license: mit
-short_description: Clinical-grade chest X-ray pneumonia detection with Grad-CAM
----
-
 # 🫁 PULMO·AI™ — Enterprise CXR Radiology & Deep Learning Platform
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3110/)
