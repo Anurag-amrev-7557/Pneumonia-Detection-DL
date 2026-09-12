@@ -92,14 +92,20 @@ class TFLiteDetector:
         """
         start_time = time.perf_counter()
 
-        # Load image
+        # Load image — handle all input types including Streamlit UploadedFile
         try:
             if isinstance(image_input, (str, Path)):
                 pil_img = Image.open(str(image_input)).convert("RGB")
             elif isinstance(image_input, Image.Image):
                 pil_img = image_input.convert("RGB")
+            elif hasattr(image_input, "read"):
+                # Streamlit UploadedFile or any file-like object
+                if hasattr(image_input, "seek"):
+                    image_input.seek(0)
+                pil_img = Image.open(image_input).convert("RGB")
             else:
-                pil_img = Image.fromarray(image_input).convert("RGB")
+                import numpy as _np
+                pil_img = Image.fromarray(_np.array(image_input)).convert("RGB")
         except Exception as e:
             logger.error(f"Error loading image: {e}")
             raise ValueError(f"Could not process image: {e}")
