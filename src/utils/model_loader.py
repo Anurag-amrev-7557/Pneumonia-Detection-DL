@@ -17,9 +17,10 @@ HF_REPO_ID = "Anurag234/pulmo-ai-weights"
 MODELS_DIR = Path("models/current")
 
 # Map of local filename → filename on HF Hub
+# Using TFLite (lightweight) instead of full .h5 for Streamlit Cloud (1GB RAM)
 MODEL_FILES = {
-    "best_model.h5": "best_model.h5",
-    "densenet121_best.h5": "densenet121_best.h5",
+    "best_model.tflite": "best_model.tflite",
+    "densenet121_best.tflite": "densenet121_best.tflite",
 }
 
 

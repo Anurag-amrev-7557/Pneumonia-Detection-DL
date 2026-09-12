@@ -1,47 +1,29 @@
-# Core ML Framework (compatible with Python 3.12)
-tensorflow==2.16.1
-keras==3.4.1
+# Minimal requirements for Streamlit Cloud (1 GB RAM limit)
+# Use TFLite + pre-converted models instead of full TensorFlow
+
+# Core inference (lightweight)
+tflite-runtime>=2.14.0
+
+# Image processing
+opencv-python-headless>=4.8.0
+Pillow>=10.0.0
+scikit-image>=0.21.0
 numpy>=1.24.0,<2.0
 
-# Image Processing
-# opencv-python-headless: no GUI needed on Streamlit Cloud / Docker
-opencv-python-headless>=4.8.0
-scikit-image>=0.21.0
-Pillow>=10.0.0
-
-# Web Frameworks
-fastapi>=0.110.0
-uvicorn[standard]>=0.28.0
-python-multipart>=0.0.9
-Flask>=2.3.0
-Flask-Cors>=4.0.0
-Werkzeug>=2.3.0
+# Web UI
 streamlit>=1.28.0
 streamlit-option-menu>=0.3.6
 
-# Data Science & ML
-scikit-learn>=1.3.0
-keras-tuner>=1.4.0
+# Data science
 pandas>=2.0.0
-
-# Visualization
-matplotlib>=3.7.0
+scikit-learn>=1.3.0
 plotly>=5.15.0
+matplotlib>=3.7.0
 seaborn>=0.12.0
+
+# Model download from HF Hub
+huggingface_hub>=0.23.0
 
 # Utilities
 python-dotenv>=1.0.0
 tqdm>=4.65.0
-Kaggle>=1.5.12
-
-# Cloud model download (weights hosted on HF Hub)
-huggingface_hub>=0.23.0
-
-# Development & Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
-black>=23.0.0
-flake8>=6.0.0
-
-# For performance monitoring
-psutil>=5.9.0

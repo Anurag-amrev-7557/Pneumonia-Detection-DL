@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.config.settings import settings
 import src.models.inference
 importlib.reload(src.models.inference)
-from src.models.inference import PneumoniaDetector
+# TFLiteDetector will be imported dynamically in init block
 
 # -----------------------------------------------------------------------------
 # PAGE CONFIGURATION & METADATA
@@ -263,14 +263,21 @@ needs_init = (
 
 if needs_init:
     try:
-        # ── Cloud deployment: download weights from HF Hub if not present ──
+# ── Cloud deployment: download weights from HF Hub if not present ──
         from src.utils.model_loader import ensure_models_downloaded
+        from src.models.tflite_inference import TFLiteDetector
+        
         with st.spinner("⏳ Loading model weights — first launch may take ~60s..."):
             ensure_models_downloaded()
 
-        model_path = settings.inference.model_path
+        model_path = settings.inference.model_path.with_suffix(".tflite")
+        secondary_path = settings.inference.secondary_model_path.with_suffix(".tflite")
+        
         if model_path.exists():
-            st.session_state.detector = PneumoniaDetector(str(model_path))
+            st.session_state.detector = TFLiteDetector(
+                model_path=model_path,
+                secondary_model_path=secondary_path if secondary_path.exists() else None
+            )
             st.session_state.model_loaded = True
         else:
             st.session_state.model_loaded = False
