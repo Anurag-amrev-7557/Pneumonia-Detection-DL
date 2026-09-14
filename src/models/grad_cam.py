@@ -128,7 +128,16 @@ class GradCAMVisualizer:
                 predictions = x
             else:
                 predictions, conv_outputs = self.grad_model(img_batch)
-            class_channel = predictions[:, class_index]
+            if predictions.shape[-1] >= 3 and class_index == 1:
+                # In 3-class models (0=Normal, 1=Bacterial, 2=Viral), class_index=1 represents
+                # pneumonia: target the active/dominant pneumonia subtype
+                class_channel = tf.where(
+                    predictions[:, 2] > predictions[:, 1],
+                    predictions[:, 2],
+                    predictions[:, 1]
+                )
+            else:
+                class_channel = predictions[:, class_index]
         
         # Compute gradients
         grads = tape.gradient(class_channel, conv_outputs)
@@ -150,7 +159,7 @@ class GradCAMVisualizer:
             if max_heat > 0:
                 heatmap = heatmap / max_heat
         
-        return heatmap.numpy()
+        return np.asarray(heatmap.numpy(), dtype=np.float32)
     
     def overlay_heatmap(
         self,
@@ -186,10 +195,11 @@ class GradCAMVisualizer:
         if heatmap is None:
             heatmap = self.generate_heatmap(image, class_index)
         
-        # Resize heatmap to match image
+        # Resize heatmap to match image (ensure float32 for OpenCV)
         h, w = original_img.shape[:2]
+        heatmap_float = np.asarray(heatmap, dtype=np.float32)
         heatmap_resized = cv2.resize(
-            heatmap,
+            heatmap_float,
             (w, h),
             interpolation=cv2.INTER_LINEAR
         )
@@ -246,8 +256,9 @@ class GradCAMVisualizer:
         # Combine images
         if include_original and include_heatmap:
             h, w = original_img.shape[:2]
-            heatmap_3ch = np.stack([heatmap]*3, axis=-1)
-            heatmap_3ch = (heatmap_3ch * 255).astype(np.uint8)
+            heatmap_float = np.asarray(heatmap, dtype=np.float32)
+            heatmap_3ch = np.stack([heatmap_float]*3, axis=-1)
+            heatmap_3ch = (np.clip(heatmap_3ch, 0, 1) * 255).astype(np.uint8)
             heatmap_resized = cv2.resize(heatmap_3ch, (w, h))
             
             combined = np.hstack([original_img, heatmap_resized, overlay])
@@ -266,7 +277,7 @@ class GradCAMVisualizer:
         """Preprocess image array."""
         image = self.image_processor.load_image_from_array(image)
         image = self.image_processor.resize_image(image)
-        image = self.image_processor.normalize_image(image)
+        image = self.image_processor.normalize_image(image, method="01")
         return image
 
 
@@ -332,7 +343,7 @@ class SaliencyMapVisualizer:
         # Normalize
         saliency = (saliency - saliency.min()) / (saliency.max() - saliency.min() + 1e-8)
         
-        return saliency
+        return np.asarray(saliency, dtype=np.float32)
     
     def visualize_saliency(
         self,
@@ -362,10 +373,11 @@ class SaliencyMapVisualizer:
         # Generate saliency map
         saliency = self.generate_saliency_map(image, class_index)
         
-        # Resize to match image
+        # Resize to match image (ensure float32 for OpenCV)
         h, w = img.shape[:2]
+        saliency_float = np.asarray(saliency, dtype=np.float32)
         saliency_resized = cv2.resize(
-            saliency,
+            saliency_float,
             (w, h),
             interpolation=cv2.INTER_LINEAR
         )
@@ -384,5 +396,5 @@ class SaliencyMapVisualizer:
         """Preprocess image array."""
         image = self.image_processor.load_image_from_array(image)
         image = self.image_processor.resize_image(image)
-        image = self.image_processor.normalize_image(image)
+        image = self.image_processor.normalize_image(image, method="01")
         return image

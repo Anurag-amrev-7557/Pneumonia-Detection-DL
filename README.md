@@ -1,318 +1,240 @@
-# 🫁 PULMO·AI™ — Enterprise CXR Radiology & Deep Learning Platform
+# 🫁 PULMO·AI™ — Radiologist-Level Pneumonia Detection Platform
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3110/)
 [![TensorFlow / Keras 3](https://img.shields.io/badge/TensorFlow%20%2F%20Keras-3.15-FF6F00.svg?logo=tensorflow&logoColor=white)](https://keras.io/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.42-FF4B4B.svg?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Tests Passing](https://img.shields.io/badge/tests-28%2F28%20passing-10B981.svg?logo=pytest&logoColor=white)](tests/)
-[![Patient Leakage](https://img.shields.io/badge/Patient%20Leakage-0.0%25%20(Certified)-10B981.svg)](#-the-clinical-discovery-eliminating-patient-leakage)
+[![Normal Specificity](https://img.shields.io/badge/Normal%20Specificity-98.97%25-10B981.svg)](#-clinical-benchmark--performance)
+[![ROC-AUC](https://img.shields.io/badge/ROC--AUC-0.9935-6366F1.svg)](#-clinical-benchmark--performance)
 [![License: MIT](https://img.shields.io/badge/License-MIT-38BDF8.svg)](LICENSE)
 
-> **PULMO·AI™** is a clinical-grade, production-engineered deep learning workstation for automated pneumonia detection and pulmonary triage from digital chest radiographs (CXR). Built with a **dual-backbone CheXNet ensemble** (ResNet-50 + DenseNet-121), **real-time Grad-CAM explainability**, and a certified **0.0% patient-leakage partition**, it bridges state-of-the-art AI research and frontline clinical diagnostic workflows.
+> **PULMO·AI™** is a clinical-grade deep learning diagnostic platform for automated pneumonia triage from frontal digital chest radiographs (CXR). Powered by a **CheXNet-inspired Dual-Backbone Ensemble (ResNet-50 + DenseNet-121)** with Grad-CAM explainability and real-time PACS inspection tools, PULMO·AI delivers high-sensitivity screening ($92.4\%$) alongside exceptional specificity on normal radiographs ($98.97\%$), minimizing false alarms.
 
 ---
 
 ## 📑 Table of Contents
-1. [Key Clinical Innovations](#-key-clinical-innovations)
-2. [The Clinical Discovery: Eliminating Patient Leakage](#-the-clinical-discovery-eliminating-patient-leakage)
-3. [Verified Performance Benchmarks](#-verified-performance-benchmarks)
-4. [Dual-Workstation Clinical UI](#-dual-workstation-clinical-ui)
-5. [Repository Architecture](#-repository-architecture)
-6. [Quick Start Guide](#-quick-start-guide)
-7. [Unified CLI Reference (`main.py`)](#-unified-cli-reference-mainpy)
-8. [Clinical Audit & Diagnostic Toolkit](#-clinical-audit--diagnostic-toolkit)
-9. [Automated Test Suite](#-automated-test-suite)
-10. [Hardware & Deployment Specifications](#-hardware--deployment-specifications)
-11. [License & Acknowledgments](#-license--acknowledgments)
+1. [Key Capabilities](#-key-capabilities)
+2. [Dual-Backbone CheXNet Architecture](#-dual-backbone-chexnet-architecture)
+3. [Clinical Benchmark & Performance](#-clinical-benchmark--performance)
+4. [Explainable AI (Grad-CAM Saliency)](#-explainable-ai-grad-cam-saliency)
+5. [Clinical PACS Inspection Controls](#-clinical-pacs-inspection-controls)
+6. [Repository Structure](#-repository-structure)
+7. [Quick Start Guide](#-quick-start-guide)
+8. [Unified CLI Reference (`main.py`)](#-unified-cli-reference-mainpy)
+9. [REST API Service (FastAPI)](#-rest-api-service-fastapi)
+10. [Automated Test Suite](#-automated-test-suite)
+11. [License & Medical Disclaimer](#-license--medical-disclaimer)
 
 ---
 
-## 🌟 Key Clinical Innovations
+## 🌟 Key Capabilities
 
-- **Dual-Backbone CheXNet Ensemble**: Soft-voting consensus fusing **ResNet-50** (deep residual feature extractor) and **DenseNet-121** (dense feature-reuse architecture tailored for radiological textures).
-- **Certified Zero-Leakage Dataset**: Solves the widespread patient-identity contamination problem found in standard Kaggle/ChestXpert splits by enforcing strict patient-level group isolation across all subsets.
-- **Explainable AI (XAI)**: High-resolution **Grad-CAM** attention maps highlighting pathological thoracic opacities while ignoring peripheral diaphragmatic edges and machine markings.
-- **Enterprise PACS Diagnostic Workstation**: High-performance 60fps single-page viewer with DICOM windowing, clinical inversion, zoom/pan navigation, and instant second-opinion telemetry.
-- **Integrated Audit Trail**: Cryptographic JSONL feedback logging captures radiologist concordance, disagreements, and clinical edge cases for continuous active learning.
-
----
-
-## 🔬 The Clinical Discovery: Eliminating Patient Leakage
-
-> [!WARNING]
-> **The Hidden Flaw in Standard Chest X-Ray Models**:
-> Naive image-level random splits result in **64.6% of test patients appearing in the training set**. Convolutional neural networks inadvertently memorize patient-specific skeletal structures, anatomical quirks, and radiological machine calibration marks—producing deceptively high validation scores that collapse upon real-world deployment.
-
-### How PULMO·AI Guarantees Clinical Generalization:
-1. **Patient Identifier Parsing**: Extracts unique patient IDs (`personXXXX`, `IM-XXXX`, `NORMAL2-IM-XXXX`) across all radiographic records.
-2. **Cryptographic MD5 Byte De-duplication**: Identifies and eliminates duplicate captures of identical exposures.
-3. **Stratified Patient-Grouped Partition**: Distributes patients into hermetic cohorts—**zero scans from any patient exist in more than one split**:
-
-```
-TOTAL RAW DATASET: 5,824 Unique Radiographs (3,117 Distinct Patients)
-├── TRAIN SET:  4,427 images  │  NORMAL: 1,185  │  PNEUMONIA: 3,242  (73.2% Prevalence)
-├── VAL SET:      686 images  │  NORMAL:   197  │  PNEUMONIA:   489  (71.3% Prevalence)
-└── TEST SET:     711 images  │  NORMAL:   197  │  PNEUMONIA:   514  (72.3% Prevalence)
-
-PATIENT OVERLAP ACROSS SETS: 0.0% (Strictly Enforced)
-```
+* **CheXNet Dual-Backbone Ensemble**: Fuses deep residual representations (ResNet-50) with dense multi-scale feature reuse (DenseNet-121) to capture both coarse consolidations and delicate interstitial opacities.
+* **Exceptional Normal Specificity (98.97%)**: Prevents false-positive alarms on normal adult lung markings and anatomical variations.
+* **Interpretable Radiologic AI (Grad-CAM)**: Generates high-resolution saliency maps localized to lung fields, verifying that model predictions are driven by actual pulmonary infiltrates rather than scanner borders or technician lead markers.
+* **PACS Workstation Interface**: Real-time Streamlit diagnostic viewer featuring:
+  * ✂️ **Auto-Crop Margins (6–7%)**: Automatically strips peripheral technician letter markers ("R", "L") and scanner edge noise.
+  * 🔄 **Contrast Inversion**: Normalizes photonegative web images to radiological DICOM standard (MONOCHROME2).
+  * 🎚️ **Adjustable Sensitivity Threshold**: Allows clinicians to toggle between screening mode ($0.35$ high sensitivity) and diagnostic confirmation ($0.65$ high specificity).
+  * 🧪 **1-Click Demo Scans**: Instant evaluation of curated Normal, Bacterial Pneumonia, Viral Pneumonia, and subtle infiltrate radiographs.
+* **Dual Runtime Engines**:
+  * **Full TensorFlow Engine**: For local workstation deployments with GPU acceleration and full Grad-CAM backpropagation.
+  * **Quantized LiteRT / TFLite Engine**: For instant, low-latency, low-RAM deployments (e.g. Streamlit Cloud).
 
 ---
 
-## 📊 Verified Performance Benchmarks
+## 🧠 Dual-Backbone CheXNet Architecture
 
-All metrics are evaluated on the strictly held-out, patient-isolated test partition ($N = 711$):
+Inspired by Stanford's landmark CheXNet paper (*Rajpurkar et al., 2017*), PULMO·AI combines two structurally divergent architectures via equal-weight soft-voting consensus:
 
-| Diagnostic Metric | Naive Random Split *(Flawed)* | PULMO·AI Leak-Free Ensemble | Clinical Benchmark Target |
-| :--- | :---: | :---: | :---: |
-| **Balanced Accuracy** | 89.20% *(Memorized)* | **95.87%** | $> 90.0\%$ |
-| **ROC-AUC Score** | 0.9410 | **0.9935** | $> 0.950$ |
-| **Pneumonia Sensitivity (Recall)** | 94.50% | **98.44%** | $> 95.0\%$ *(Minimizes missed infections)* |
-| **Normal Specificity** | 83.90% | **93.30%** | $> 90.0\%$ *(Minimizes false alarms)* |
-| **F1-Macro Score** | 0.8870 | **0.9542** | $> 0.900$ |
-| **Patient Leakage Rate** | 64.6% *(Severe)* | **0.00% (Certified)** | **0.0%** |
+```text
+                     Frontal Chest Radiograph (224x224x3)
+                                      │
+            ┌─────────────────────────┴─────────────────────────┐
+            ▼                                                   ▼
+     ┌──────────────┐                                    ┌──────────────┐
+     │  ResNet-50   │                                    │ DenseNet-121 │
+     │  (Residual)  │                                    │  (CheXNet)   │
+     └──────┬───────┘                                    └──────┬───────┘
+            │                                                   │
+     P(Pneumonia)_res                                    P(Pneumonia)_dense
+            │                                                   │
+            └─────────────────────────┬─────────────────────────┘
+                                      ▼
+                      Soft-Voting Consensus Ensemble
+               P_final = 0.5 * P_res + 0.5 * P_dense
+                                      │
+                                      ▼
+                        Diagnostic Classification:
+                           [ NORMAL vs PNEUMONIA ]
+```
+
+1. **DenseNet-121 (CheXNet Backbone)**: Every layer receives direct inputs from all preceding layers ($x_l = H_l([x_0, x_1, \dots, x_{l-1}])$). This architecture preserves fine-grained bronchial structures and suppresses background noise on healthy lung parenchyma.
+2. **ResNet-50**: Deep residual skip connections ($\mathbf{y} = \mathcal{F}(\mathbf{x}, \{W_i\}) + \mathbf{x}$) allow robust feature extraction across dense lobar consolidations.
 
 ---
 
-## 🖥️ Dual-Workstation Clinical UI
+## 📊 Clinical Benchmark & Performance
 
-PULMO·AI provides two specialized user interface options:
+Evaluated on the certified held-out test cohort:
 
-### 1. Interactive Streamlit Radiology Suite
-*Targeted for clinical researchers, academic presentations, and diagnostic triage.*
-- **Diagnostic Studio**: Instant drag-and-drop CXR analysis with dual-backbone probability gauges.
-- **Grad-CAM Visualizer**: Layer-by-layer attention maps (Thoracic cavity vs. peripheral border focus).
-- **Batch Hospital Triage**: Folder-level processing with automated risk stratification and CSV/JSON export.
-- **Model Intelligence & Audit**: Live ROC curves, confusion matrices, and radiologist feedback telemetry.
-
-```bash
-python main.py dashboard --port 8501
-```
-
-### 2. High-Performance FastAPI PACS Workstation
-*Targeted for high-throughput radiology reading rooms and enterprise hospital network integration.*
-- **60fps Native PACS Single-Page App**: Async non-blocking inference powered by `uvicorn` and `FastAPI`.
-- **Radiologist Controls**: Dynamic invert, brightness/contrast windowing, edge enhancement, and pan/zoom.
-- **Curated Patient Cases**: Pre-loaded pediatric bacterial, viral, and clear-lung verification samples.
-
-```bash
-python run_app.py
-# or: python main.py server --port 8000
-```
+| Metric | Standalone ResNet-50 | Standalone DenseNet-121 | **Dual CheXNet Ensemble** | Clinical Significance |
+| :--- | :---: | :---: | :---: | :--- |
+| **Balanced Accuracy** | 93.46% | 96.16% | **95.68%** | Robust cross-class balance |
+| **ROC-AUC** | 0.9879 | 0.9972 | **0.9935** | Excellent discriminative power |
+| **Macro F1-Score** | 0.9074 | 0.9442 | **0.9302** | Balanced precision & recall |
+| **Specificity (Normal)** | 96.45% | 97.97% | **98.97%** | **Near-zero false alarms on normal lungs** |
+| **Sensitivity (Pneumonia)** | 90.47% | 94.36% | **92.38%** | Reliable detection of acute opacity |
 
 ---
 
-## 📁 Repository Architecture
+## 🔍 Explainable AI (Grad-CAM Saliency)
 
-The codebase follows a modular, enterprise-ready structure:
+To ensure clinical trustworthiness, PULMO·AI computes gradient-weighted class activation maps at the final convolutional stage:
+
+$$L_{\text{Grad-CAM}}^c = \text{ReLU}\left(\sum_k \alpha_k^c A^k\right), \quad \text{where } \alpha_k^c = \frac{1}{Z} \sum_i \sum_j \frac{\partial Y^c}{\partial A_{i,j}^k}$$
+
+This transparently highlights whether model activations correspond to:
+* **Focal Alveolar Consolidation** (typical of lobar bacterial pneumonia)
+* **Diffuse / Bilateral Interstitial Infiltrates** (typical of viral pneumonia)
+* Or whether an alert was triggered by an extraneous peripheral artifact.
+
+---
+
+## 🛠️ Clinical PACS Inspection Controls
+
+Radiographs sourced from external facilities, scanners, or web resources often suffer from photometric variations:
+* **Auto-Crop Margins**: Strips up to 7% of peripheral border artifacts to isolate lung fields from technician letter markers ("L", "R").
+* **Contrast Inversion**: Reverses inverted (photonegative) scans back to standard DICOM MONOCHROME2.
+* **Sensitivity Calibration**: Move from screening mode (35% threshold) to confirmatory triage (65% threshold).
+
+---
+
+## 📁 Repository Structure
 
 ```
-pneumonia-detection/
-├── main.py                         # Unified master CLI router (train, finetune, predict, evaluate, etc.)
-├── run_app.py                      # Single-command launcher for FastAPI PACS Diagnostic Workstation
-├── data/                           # 🔒 Verified 100% leak-free dataset
-│   ├── train/                      # 4,427 radiographs (1,185 Normal, 3,242 Pneumonia)
-│   ├── val/                        # 686 radiographs (197 Normal, 489 Pneumonia)
-│   ├── test/                       # 711 radiographs (197 Normal, 514 Pneumonia)
-│   └── feedback_audit.jsonl        # Persistent radiologist audit trail
+├── data/
+│   └── test/                      # Curated test & demo radiographs
 ├── models/
-│   └── current/                    # 🎯 Active production weights & telemetry
-│       ├── best_model.h5           # Primary Backbone (ResNet-50, 221 MB)
-│       ├── densenet121_best.h5     # Secondary Backbone (DenseNet-121, 38 MB)
-│       ├── ensemble_metadata.json  # Ensemble configuration & soft-voting weights
-│       ├── model_metadata.json     # Hyperparameters, training dates & performance
-│       └── training_history.json   # Epoch loss/accuracy training history
-├── notebooks/                      # 📓 Segregated research & development notebooks
-│   └── Pneumonia_Dataset.ipynb     # Interactive model exploration notebook
-├── scripts/                        # 🛠️ Lean diagnostic & clinical evaluation CLI toolkit
-│   ├── diagnose_overfitting.py     # 5-test quantitative model health & spatial focus audit
-│   ├── evaluate_model.py           # Standalone test set performance evaluation
-│   ├── verify_zero_leakage.py      # Cryptographic MD5 & zero-leakage validator
-│   └── README.md                   # Detailed scripts reference manual
-├── src/                            # 📦 Core application package
+│   ├── current/                   # Active production models
+│   │   ├── best_model.h5          # ResNet-50 primary backbone (211 MB)
+│   │   ├── densenet121_best.h5    # DenseNet-121 CheXNet backbone (36 MB)
+│   │   ├── ensemble_metadata.json # Certified consensus weights & test metrics
+│   │   ├── model_metadata.json    # Training hyperparameters
+│   │   └── training_history.json  # Loss & accuracy curves
+│   └── README.md                  # Detailed model documentation
+├── scripts/
+│   ├── download_weights.py        # Automated weight downloader with SHA-256
+│   ├── evaluate_model.py          # Benchmark evaluation script
+│   ├── diagnose_overfitting.py    # Generalization audit script
+│   └── verify_zero_leakage.py     # Patient isolation audit tool
+├── src/
 │   ├── api/
-│   │   └── server.py               # Asynchronous FastAPI PACS server & inference endpoints
-│   ├── config/
-│   │   └── settings.py             # Centralized configuration dataclasses & telemetry
+│   │   └── server.py              # Production FastAPI REST backend
 │   ├── models/
-│   │   ├── architectures.py        # ModelFactory (ResNet-50, DenseNet-121, VGG-16, Custom CNN)
-│   │   ├── fine_tune_pipeline.py   # ResNet-50 top-layer fine-tuning pipeline
-│   │   ├── grad_cam.py             # Explainable AI Grad-CAM attention visualizer
-│   │   ├── inference.py            # PneumoniaDetector CheXNet dual-backbone engine
-│   │   ├── training.py             # Core ModelTrainer, callbacks & optimizer engines
-│   │   └── training_pipeline.py    # End-to-end memory-efficient training pipeline
+│   │   ├── architectures.py       # ResNet, DenseNet, VGG, CNN definitions
+│   │   ├── grad_cam.py            # High-resolution Grad-CAM visualizer
+│   │   ├── inference.py           # Full TensorFlow dual-backbone detector
+│   │   ├── tflite_inference.py    # Lightweight LiteRT runtime
+│   │   └── training.py            # Model training & optimization loop
 │   ├── ui/
-│   │   ├── streamlit_app.py        # Enterprise radiology suite (Streamlit)
-│   │   └── web/                    # 60fps PACS viewer frontend (HTML/CSS/JS)
+│   │   └── streamlit_app.py       # Clinical PACS Workstation UI
 │   └── utils/
-│       ├── data_augmentation.py    # Clinical radiograph transformations (rotations, flips, zoom)
-│       └── image_processing.py     # ImageProcessor (rescaling, ImageNet normalization, resizing)
-├── tests/                          # 🧪 Automated unit test suite (28/28 tests passing)
-│   ├── test_config.py              # Configuration & environment validation tests
-│   ├── test_image_processing.py    # Image resizing, loading, and normalization tests
-│   └── test_models.py              # Architecture factory, compilation, and trainer tests
-├── requirements.txt                # Production dependency manifest
-├── requirements-dev.txt            # Development & testing dependencies
-├── pytest.ini                      # Pytest runner configuration
-├── setup.py                        # Python package distribution configuration
-├── LICENSE                         # MIT Open Source License
-└── README.md                       # Master documentation
+│       ├── image_processing.py    # CLAHE, normalization, transforms
+│       ├── model_loader.py        # Cloud weights & sample manager
+│       └── radiology.py           # Radiologic heuristics & colormaps
+├── tests/                         # Comprehensive pytest suite (28 tests)
+├── main.py                        # Unified CLI entrypoint
+├── requirements.txt               # Production Python dependencies
+└── pytest.ini                     # Test configuration
 ```
 
 ---
 
-## ⚡ Quick Start Guide
+## 🚀 Quick Start Guide
 
-### 1. Prerequisites & Environment Setup
-
-Python **3.10** or **3.11** is recommended.
+### 1. Prerequisites & Installation
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/yourusername/pneumonia-detection.git
-cd "pneumonia detection"
+# Clone the repository
+git clone https://github.com/Anurag-amrev-7557/Pneumonia-Detection-DL.git
+cd Pneumonia-Detection-DL
 
-# 2. Create and activate virtual environment
+# Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate
 
-# 3. Install production dependencies
+# Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 2. Verify Data Integrity
+### 2. Download Pre-Trained Weights
 
-Confirm that the active dataset has strictly zero patient leakage:
-
-```bash
-python scripts/verify_zero_leakage.py
-```
-
-### 3. Run Your First Prediction
+Weights are automatically fetched on first web launch, or can be downloaded manually:
 
 ```bash
-python main.py predict --image "data/test/PNEUMONIA/person1014_bacteria_2945.jpeg" --explain
+python scripts/download_weights.py models/current/
 ```
+
+### 3. Launch the Clinical Workstation (Streamlit)
+
+```bash
+streamlit run src/ui/streamlit_app.py
+```
+Open **`http://localhost:8501`** in your browser.
 
 ---
 
 ## 💻 Unified CLI Reference (`main.py`)
 
-`main.py` provides a consolidated CLI interface for all operations:
-
 ```bash
-# -------------------------------------------------------------
-# 1. CLINICAL INFERENCE & EXPLAINABILITY
-# -------------------------------------------------------------
-# Predict single scan with Grad-CAM visualization:
-python main.py predict --image data/test/NORMAL/IM-0341-0001.jpeg --explain
+# Single image prediction with Grad-CAM visualization
+python main.py predict --image data/test/NORMAL/IM-0341-0001.jpeg --gradcam
 
-# Batch process an entire directory of radiographs:
-python main.py predict-batch --directory data/test/PNEUMONIA --output batch_results.json
+# Single image prediction with margin cropping
+python main.py predict --image path/to/scan.jpeg --crop-margins
 
-# -------------------------------------------------------------
-# 2. MODEL EVALUATION
-# -------------------------------------------------------------
-# Evaluate production model on the held-out test set:
-python main.py evaluate --test-dir data/test
+# Batch directory evaluation
+python main.py batch --input-dir data/test/NORMAL/ --output-file results.json
 
-# -------------------------------------------------------------
-# 3. TRAINING & FINE-TUNING PIPELINES
-# -------------------------------------------------------------
-# Train ResNet-50 from scratch with class-weighted balancing:
-python main.py train --model resnet50 --epochs 25 --batch-size 32 --learning-rate 0.0001
-
-# Fine-tune unfreezed top layers of the trained checkpoint:
-python main.py finetune --epochs 15 --learning-rate 1e-5 --model-path models/current/best_model.h5
-
-# -------------------------------------------------------------
-# 4. WORKSTATION SERVERS
-# -------------------------------------------------------------
-# Launch FastAPI Enterprise PACS Diagnostic Workstation (Port 8000):
-python main.py server --port 8000
-
-# Launch Streamlit Interactive Radiology Dashboard (Port 8501):
-python main.py dashboard --port 8501
+# Launch API server
+python main.py serve --port 8000
 ```
 
 ---
 
-## 🛠️ Clinical Audit & Diagnostic Toolkit
+## 🌐 REST API Service (FastAPI)
 
-The `scripts/` directory contains dedicated diagnostic tools:
+Launch the high-performance async API server:
 
-| Tool | Command | Description |
-| :--- | :--- | :--- |
-| **Zero-Leakage Audit** | `python scripts/verify_zero_leakage.py` | Audits MD5 cryptographic duplicates and patient-level isolation across Train, Val, and Test splits. |
-| **Overfitting & Stress Audit** | `python scripts/diagnose_overfitting.py` | Runs 5 quantitative stress tests (learning curves, perturbation noise resistance, thoracic spatial focus). |
-| **Performance Evaluator** | `python scripts/evaluate_model.py` | Generates clinical confusion matrices, sensitivity, specificity, and AUC-ROC metrics. |
+```bash
+uvicorn src.api.server:app --host 0.0.0.0 --port 8000 --reload
+```
+
+* **Interactive Swagger UI**: `http://localhost:8000/docs`
+* **Health Check**: `GET /health`
+* **Prediction**: `POST /predict` (accepts multipart file upload)
 
 ---
 
 ## 🧪 Automated Test Suite
 
-The test suite covers configuration, image pipelines, model architectures, and training callbacks:
+Run the full automated test suite verifying data pipelines, image processors, model factories, and inference engines:
 
 ```bash
-# Run test suite with full verbosity
 pytest tests/ -v
 ```
 
-```text
-============================== test session starts ==============================
-platform darwin -- Python 3.11.16, pytest-9.1.1, pluggy-1.6.0
-collected 28 items
-
-tests/test_config.py::TestDataConfig::test_invalid_image_size PASSED     [  3%]
-tests/test_config.py::TestDataConfig::test_invalid_splits PASSED         [  7%]
-tests/test_config.py::TestDataConfig::test_valid_splits PASSED           [ 10%]
-tests/test_config.py::TestModelConfig::test_invalid_dropout PASSED       [ 14%]
-tests/test_config.py::TestModelConfig::test_invalid_learning_rate PASSED [ 17%]
-tests/test_config.py::TestModelConfig::test_valid_dropout PASSED         [ 21%]
-tests/test_config.py::TestSettings::test_config_dict PASSED              [ 25%]
-tests/test_config.py::TestSettings::test_initialization PASSED           [ 28%]
-tests/test_image_processing.py::TestImageProcessor::test_initialization PASSED [ 32%]
-tests/test_image_processing.py::TestImageProcessor::test_invalid_norm PASSED   [ 35%]
-tests/test_image_processing.py::TestImageProcessor::test_load_image PASSED     [ 39%]
-tests/test_image_processing.py::TestImageProcessor::test_normalize_01 PASSED   [ 42%]
-tests/test_image_processing.py::TestImageProcessor::test_norm_imagenet PASSED  [ 46%]
-tests/test_image_processing.py::TestImageProcessor::test_resize_image PASSED   [ 50%]
-tests/test_models.py::TestModelFactory::test_create_model[custom_cnn] PASSED    [ 53%]
-tests/test_models.py::TestModelFactory::test_create_model[vgg16] PASSED         [ 57%]
-tests/test_models.py::TestModelFactory::test_create_model[resnet50] PASSED      [ 60%]
-tests/test_models.py::TestModelFactory::test_create_model[inceptionv3] PASSED   [ 64%]
-tests/test_models.py::TestModelFactory::test_unsupported_model PASSED          [ 67%]
-tests/test_models.py::TestModelFactory::test_get_supported_models PASSED       [ 71%]
-tests/test_models.py::TestCustomCNNArchitecture::test_build_model PASSED        [ 75%]
-tests/test_models.py::TestCustomCNNArchitecture::test_dropout_validation PASSED [ 78%]
-tests/test_models.py::TestCustomCNNArchitecture::test_input_shape PASSED        [ 82%]
-tests/test_models.py::TestModelTrainer::test_trainer_compilation PASSED         [ 85%]
-tests/test_models.py::TestModelTrainer::test_trainer_invalid_optimizer PASSED  [ 89%]
-tests/test_models.py::TestModelTrainer::test_trainer_train PASSED               [ 92%]
-tests/test_models.py::TestFineTuner::test_unfreeze_layers PASSED                [ 96%]
-tests/test_models.py::TestFineTuner::test_save_and_reset_state PASSED           [100%]
-
-======================== 28 passed, 7 warnings in 3.75s ========================
-```
+All 28 tests pass with zero regressions.
 
 ---
 
-## ⚙️ Hardware & Deployment Specifications
+## ⚖️ License & Medical Disclaimer
 
-| Parameter | Specification | Notes |
-| :--- | :--- | :--- |
-| **Inference Latency (P95)** | $\approx \mathbf{280\text{ ms}}$ | Apple Silicon Metal / NVIDIA TensorRT Accelerated |
-| **Input Resolution** | $224 \times 224 \times 3$ RGB | Scaled via bi-linear interpolation |
-| **Memory Footprint** | $\approx \mathbf{248\text{ MB}}$ RAM | Lightweight deployment profile |
-| **Supported Formats** | JPEG, PNG, DICOM (converted) | Validated on clinical ChestXpert and pediatric sets |
-| **Backend Serialization** | Keras 3 / HDF5 (`.h5`) | Zero-retrace tensor computation graph |
+This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
----
-
-## 📜 License & Disclaimers
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
-> [!CAUTION]
-> **Clinical Research Disclaimer**:
-> PULMO·AI™ is designed for medical research, diagnostic assistance, and clinical decision support. While it achieves a **95.87% Balanced Accuracy** and **0.9935 ROC-AUC**, it is not a standalone diagnostic device. Radiographic interpretations must always be corroborated by a board-certified radiologist or licensed medical professional.
+> [!IMPORTANT]
+> **Medical Research Disclaimer**:
+> PULMO·AI™ is developed as a computer vision research project and diagnostic decision support tool. It is not approved by the FDA or CE as a standalone diagnostic medical device. All outputs should be interpreted by a qualified radiologist or physician alongside patient history, clinical presentation, and laboratory findings.

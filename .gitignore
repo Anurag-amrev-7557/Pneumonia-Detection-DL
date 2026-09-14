@@ -23,6 +23,8 @@ data_backup_leaked/
 *.joblib
 models/**/*.h5
 models/*.h5
+models/backup_old/
+models/kaggle_mega/
 models/current/finetune_logs/
 models/current/logs/
 
@@ -53,13 +55,15 @@ coverage.xml
 graphify-out/
 .agents/
 
-# Temporary directories
+# Temporary directories & caches
 scratch/
 uploads/
 predictions/
 tmp/
 temp/
 *.tmp
+*.log
+*.npz
 
 # Operating System & IDE clutter
 .DS_Store

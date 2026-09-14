@@ -75,6 +75,12 @@ def ensure_models_downloaded() -> bool:
     version_file = MODELS_DIR / ".model_version"
     current_version = version_file.read_text().strip() if version_file.exists() else ""
 
+    # If full local weights already exist, skip cloud model download
+    if (MODELS_DIR / "best_model.h5").exists():
+        logger.info("Local best_model.h5 is present — skipping model download.")
+        _ensure_samples_downloaded()
+        return True
+
     models_present = all((MODELS_DIR / fname).exists() for fname in MODEL_FILES)
 
     if models_present and current_version == MODEL_VERSION:

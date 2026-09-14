@@ -55,4 +55,13 @@ python scripts/evaluate_model.py --test-dir data/test --output evaluation_metric
 
 ---
 
-**Last Updated**: 2026-09-10
+### 4. download_weights.py
+Automated release weights downloader from GitHub Releases with SHA-256 cryptographic verification.
+
+```bash
+python scripts/download_weights.py models/current/
+```
+
+---
+
+**Last Updated**: 2026-09-14

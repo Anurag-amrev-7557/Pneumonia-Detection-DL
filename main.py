@@ -142,6 +142,16 @@ Examples:
     )
     batch_parser.add_argument('--output', help='Output JSON file for results')
 
+    # Classify subtype command
+    type_parser = subparsers.add_parser('classify-type', help='Classify pneumonia etiology (Bacterial vs Viral)')
+    type_parser.add_argument('--image', required=True, help='Path to image file')
+    type_parser.add_argument('--model', default=str(settings.inference.model_path), help='Path to model file')
+
+    # Stage command
+    stage_parser = subparsers.add_parser('stage', help='Evaluate 6-zone Brixia scoring and severity stage')
+    stage_parser.add_argument('--image', required=True, help='Path to image file')
+    stage_parser.add_argument('--model', default=str(settings.inference.model_path), help='Path to model file')
+
     # Version command
     subparsers.add_parser('version', help='Show version')
 
@@ -160,6 +170,10 @@ Examples:
             _run_dashboard(args)
         elif args.command == 'predict':
             _run_predict(args)
+        elif args.command == 'classify-type':
+            _run_classify_type(args)
+        elif args.command == 'stage':
+            _run_stage(args)
         elif args.command == 'predict-batch':
             _run_batch_predict(args)
         elif args.command == 'version':
@@ -248,6 +262,31 @@ def _run_predict(args):
         for cls, prob in result['probabilities'].items():
             print(f"  {cls}: {prob:.4f}")
 
+    if result.get('subtype'):
+        print("\n" + "-" * 40)
+        print("ETIOLOGICAL SUBTYPE & MORPHOLOGY")
+        print("-" * 40)
+        print(f"Subtype:         {result['subtype']} ({result.get('subtype_confidence', 0):.1%})")
+        print(f"Pattern:         {result.get('morphological_pattern', 'N/A')}")
+        if result.get('subtype_probabilities'):
+            for k, v in result['subtype_probabilities'].items():
+                print(f"  • {k}: {v:.1%}")
+
+    if result.get('brixia_score') is not None:
+        print("\n" + "-" * 40)
+        print("RADIOLOGICAL STAGING & BRIXIA SCORE")
+        print("-" * 40)
+        print(f"Brixia Score:    {result['brixia_score']} / 18 ({result.get('severity_stage', 'Stage 0')})")
+        print(f"Opacity Extent:  {result.get('opacity_extent_pct', 0.0):.1f}%")
+        print(f"Pathology Stage: {result.get('pathological_stage', 'N/A')}")
+        sev = result.get('severity', {})
+        if sev.get('clinical_risk_tier'):
+            print(f"Risk Tier:       {sev['clinical_risk_tier']}")
+        if sev.get('zone_scores'):
+            print(f"6-Zone Matrix:   {sev['zone_scores']}")
+        if result.get('clinical_recommendation'):
+            print(f"\nRecommendation:  {result['clinical_recommendation']}")
+
     if args.explain:
         output_dir = Path(args.output_dir) if args.output_dir else Path("scratch")
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -307,6 +346,59 @@ def _run_batch_predict(args):
         with open(output_path, 'w') as f:
             json.dump(results, f, indent=2)
         logger.info(f"Saved results to {output_path}")
+
+
+def _run_classify_type(args):
+    """Run subtype etiology classification (Bacterial vs Viral)."""
+    logger.info(f"Classifying pneumonia subtype for: {args.image}")
+    detector = PneumoniaDetector(model_path=args.model)
+    result = detector.predict(args.image, return_gradcam=True)
+
+    print("\n" + "=" * 60)
+    print("PNEUMONIA ETIOLOGICAL SUBTYPE REPORT")
+    print("=" * 60)
+    print(f"Image:            {args.image}")
+    print(f"Primary Triage:   {result['label']} (Confidence: {result['confidence']:.1%})")
+    print(f"Etiology Subtype: {result.get('subtype', 'N/A')}")
+    print(f"Subtype Conf:     {result.get('subtype_confidence', 0):.1%}")
+    print(f"Pattern:          {result.get('morphological_pattern', 'N/A')}")
+    if result.get('subtype_probabilities'):
+        print("\nSubtype Probability Distribution:")
+        for sub, prob in result['subtype_probabilities'].items():
+            print(f"  • {sub}: {prob:.1%}")
+    print("=" * 60 + "\n")
+
+
+def _run_stage(args):
+    """Run 6-zone Brixia staging and severity evaluation."""
+    logger.info(f"Evaluating Brixia staging for: {args.image}")
+    detector = PneumoniaDetector(model_path=args.model)
+    result = detector.predict(args.image, return_gradcam=True)
+
+    print("\n" + "=" * 60)
+    print("RADIOLOGICAL BRIXIA STAGING & SEVERITY REPORT")
+    print("=" * 60)
+    print(f"Image:               {args.image}")
+    print(f"Clinical Diagnosis:  {result['label']}")
+    print(f"Severity Stage:      {result.get('severity_stage', 'Stage 0 (Clear)')}")
+    print(f"Brixia Score:        {result.get('brixia_score', 0)} / 18")
+    print(f"Opacity Extent:      {result.get('opacity_extent_pct', 0.0):.1f}%")
+    print(f"Pathological Stage:  {result.get('pathological_stage', 'N/A')}")
+
+    sev = result.get('severity', {})
+    if sev.get('clinical_risk_tier'):
+        print(f"Clinical Risk Tier:  {sev['clinical_risk_tier']}")
+    if result.get('clinical_recommendation'):
+        print(f"Recommendation:      {result['clinical_recommendation']}")
+
+    if sev.get('zone_details'):
+        print("\n6-Zone Anatomical Matrix Breakdown:")
+        print(f"  {'Zone':<18} | {'Score':<6} | {'Description'}")
+        print("  " + "-" * 55)
+        for zd in sev['zone_details']:
+            print(f"  {zd['zone_name']:<18} | {zd['score']}/3   | {zd['description']}")
+
+    print("=" * 60 + "\n")
 
 
 def _show_version():

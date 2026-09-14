@@ -286,6 +286,121 @@
       <!-- SCROLLABLE DIAGNOSTIC TELEMETRY DETAILS -->
       <div class="flex-1 overflow-y-auto divide-y divide-slate-200">
         
+        <!-- 1. PNEUMONIA ETIOLOGY & SUBTYPE -->
+        <div class="p-4 space-y-2.5 bg-white">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="microscope" class="w-4 h-4 text-purple-700"></i> Etiology & Subtype
+            </h3>
+            <span id="subtypeBadge" class="text-xs font-black px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 border border-slate-400">
+              Assessing...
+            </span>
+          </div>
+
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-300 space-y-2">
+            <div>
+              <span class="text-[10px] uppercase font-extrabold text-slate-500 block mb-0.5">Morphological Pattern</span>
+              <span id="subtypePattern" class="text-xs font-bold text-slate-950 block leading-tight">--</span>
+            </div>
+            
+            <div class="pt-1.5 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-[10px] font-bold text-slate-500 block">Bacterial Prob</span>
+                <span id="bacterialProbDisplay" class="font-mono font-black text-rose-900 text-sm">--%</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-slate-500 block">Viral Prob</span>
+                <span id="viralProbDisplay" class="font-mono font-black text-amber-900 text-sm">--%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. RADIOLOGICAL SEVERITY & BRIXIA SCORE -->
+        <div class="p-4 space-y-2.5 bg-slate-50">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="gauge" class="w-4 h-4 text-rose-700"></i> Staging & Brixia Score
+            </h3>
+            <span id="severityStageBadge" class="text-xs font-black px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 border border-slate-400">
+              --
+            </span>
+          </div>
+
+          <!-- Brixia Score Bar -->
+          <div class="bg-white p-3 rounded-xl border border-slate-300 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-slate-700">Brixia Infiltration Score</span>
+              <span class="text-sm font-black font-mono text-slate-950">
+                <span id="brixiaScoreVal">0</span><span class="text-xs text-slate-500"> / 18</span>
+              </span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
+              <div id="brixiaBar" class="h-full bg-blue-700 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 pt-1 text-[11px] font-semibold text-slate-700">
+              <div>Opacity Extent: <strong id="opacityExtentVal" class="text-slate-950 font-mono">0%</strong></div>
+              <div>Risk Tier: <strong id="clinicalRiskVal" class="text-slate-950">--</strong></div>
+            </div>
+            <div class="pt-1 border-t border-slate-100 text-[11px]">
+              <span class="text-slate-500 font-medium">Pathological Progression:</span>
+              <div id="pathologicalStageVal" class="font-bold text-slate-900 mt-0.5">--</div>
+            </div>
+          </div>
+
+          <!-- 6-Zone Anatomical Brixia Matrix -->
+          <div class="bg-white p-3 rounded-xl border border-slate-300 space-y-2">
+            <div class="flex items-center justify-between text-[11px] font-extrabold text-slate-700">
+              <span>6-ZONE ANATOMICAL MATRIX</span>
+              <span class="text-[10px] text-slate-500 font-normal">Score: 0 (Clear) to 3 (Consolidation)</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-center text-xs">
+              <!-- Right Lung (Viewer Left) -->
+              <div class="space-y-1 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <span class="text-[10px] font-extrabold text-slate-600 block mb-1">RIGHT LUNG</span>
+                <div class="flex justify-between items-center px-2 py-1 rounded bg-white border border-slate-200">
+                  <span class="text-[11px] font-bold text-slate-700">Upper (R-UZ)</span>
+                  <span id="zone_R_UZ" class="font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-slate-100">0</span>
+                </div>
+                <div class="flex justify-between items-center px-2 py-1 rounded bg-white border border-slate-200">
+                  <span class="text-[11px] font-bold text-slate-700">Mid (R-MZ)</span>
+                  <span id="zone_R_MZ" class="font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-slate-100">0</span>
+                </div>
+                <div class="flex justify-between items-center px-2 py-1 rounded bg-white border border-slate-200">
+                  <span class="text-[11px] font-bold text-slate-700">Lower (R-LZ)</span>
+                  <span id="zone_R_LZ" class="font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-slate-100">0</span>
+                </div>
+              </div>
+
+              <!-- Left Lung (Viewer Right) -->
+              <div class="space-y-1 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <span class="text-[10px] font-extrabold text-slate-600 block mb-1">LEFT LUNG</span>
+                <div class="flex justify-between items-center px-2 py-1 rounded bg-white border border-slate-200">
+                  <span class="text-[11px] font-bold text-slate-700">Upper (L-UZ)</span>
+                  <span id="zone_L_UZ" class="font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-slate-100">0</span>
+                </div>
+                <div class="flex justify-between items-center px-2 py-1 rounded bg-white border border-slate-200">
+                  <span class="text-[11px] font-bold text-slate-700">Mid (L-MZ)</span>
+                  <span id="zone_L_MZ" class="font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-slate-100">0</span>
+                </div>
+                <div class="flex justify-between items-center px-2 py-1 rounded bg-white border border-slate-200">
+                  <span class="text-[11px] font-bold text-slate-700">Lower (L-LZ)</span>
+                  <span id="zone_L_LZ" class="font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-slate-100">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clinical Action Protocol -->
+          <div class="bg-blue-50 border border-blue-300 p-3 rounded-xl text-xs space-y-1">
+            <span class="text-[10px] uppercase font-extrabold text-blue-900 block flex items-center gap-1">
+              <i data-lucide="clipboard-check" class="w-3.5 h-3.5 text-blue-800"></i> Protocol Recommendation
+            </span>
+            <p id="clinicalRecText" class="font-semibold text-blue-950 leading-relaxed">--</p>
+          </div>
+        </div>
+
         <!-- 3. DUAL-BACKBONE CONSENSUS -->
         <div class="p-4 space-y-2.5">
           <div class="flex items-center justify-between">
@@ -422,6 +537,28 @@
           <div class="text-xs font-black uppercase tracking-wider text-slate-900">FINDINGS & TRIAGE IMPRESSION:</div>
           <div id="reportImpression" class="p-4 rounded-xl bg-slate-100 border border-slate-300 text-sm font-black text-slate-950">
             --
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="text-xs font-black uppercase tracking-wider text-slate-900">ETIOLOGY & RADIOLOGICAL STAGING:</div>
+          <div class="grid grid-cols-2 gap-3 bg-slate-100 p-3.5 rounded-xl border border-slate-300">
+            <div>
+              <span class="text-slate-600 block text-[11px]">Pneumonia Subtype:</span>
+              <strong id="reportSubtype" class="text-slate-950 font-bold">--</strong>
+            </div>
+            <div>
+              <span class="text-slate-600 block text-[11px]">Brixia Score & Stage:</span>
+              <strong id="reportBrixiaStage" class="text-slate-950 font-bold">--</strong>
+            </div>
+            <div class="col-span-2 pt-1 border-t border-slate-200">
+              <span class="text-slate-600 block text-[11px]">Morphological Pattern:</span>
+              <span id="reportMorphPattern" class="text-slate-900 font-semibold">--</span>
+            </div>
+            <div class="col-span-2 pt-1 border-t border-slate-200">
+              <span class="text-slate-600 block text-[11px]">Protocol Recommendation:</span>
+              <span id="reportRecommendation" class="text-slate-900 font-semibold">--</span>
+            </div>
           </div>
         </div>
 

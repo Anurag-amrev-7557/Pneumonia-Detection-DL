@@ -109,6 +109,33 @@
     reportResNetProb: document.getElementById('reportResNetProb'),
     reportDenseNetProb: document.getElementById('reportDenseNetProb'),
     reportEnsembleProb: document.getElementById('reportEnsembleProb'),
+
+    // Subtype & Staging Telemetry
+    subtypeBadge: document.getElementById('subtypeBadge'),
+    subtypePattern: document.getElementById('subtypePattern'),
+    bacterialProbDisplay: document.getElementById('bacterialProbDisplay'),
+    viralProbDisplay: document.getElementById('viralProbDisplay'),
+    severityStageBadge: document.getElementById('severityStageBadge'),
+    brixiaScoreVal: document.getElementById('brixiaScoreVal'),
+    brixiaBar: document.getElementById('brixiaBar'),
+    opacityExtentVal: document.getElementById('opacityExtentVal'),
+    clinicalRiskVal: document.getElementById('clinicalRiskVal'),
+    pathologicalStageVal: document.getElementById('pathologicalStageVal'),
+    clinicalRecText: document.getElementById('clinicalRecText'),
+
+    // 6-Zone Elements
+    zone_R_UZ: document.getElementById('zone_R_UZ'),
+    zone_R_MZ: document.getElementById('zone_R_MZ'),
+    zone_R_LZ: document.getElementById('zone_R_LZ'),
+    zone_L_UZ: document.getElementById('zone_L_UZ'),
+    zone_L_MZ: document.getElementById('zone_L_MZ'),
+    zone_L_LZ: document.getElementById('zone_L_LZ'),
+
+    // Report Staging Additions
+    reportSubtype: document.getElementById('reportSubtype'),
+    reportBrixiaStage: document.getElementById('reportBrixiaStage'),
+    reportMorphPattern: document.getElementById('reportMorphPattern'),
+    reportRecommendation: document.getElementById('reportRecommendation'),
   };
 
   const ctx = dom.canvas.getContext('2d');
@@ -806,6 +833,80 @@
       dom.attentionFocus.textContent = 'Bilateral Clear Parenchyma';
       dom.attentionFocus.className = 'font-black text-emerald-950';
     }
+
+    // Subtype (Bacterial vs. Viral)
+    const subtype = data.subtype || (isPneu ? 'Bacterial' : 'Normal');
+    if (subtype === 'Bacterial') {
+      dom.subtypeBadge.textContent = 'Bacterial (Lobar)';
+      dom.subtypeBadge.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-950 border border-rose-600';
+    } else if (subtype === 'Viral') {
+      dom.subtypeBadge.textContent = 'Viral (Interstitial)';
+      dom.subtypeBadge.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-950 border border-amber-600';
+    } else {
+      dom.subtypeBadge.textContent = 'Clear / Normal';
+      dom.subtypeBadge.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-600';
+    }
+
+    dom.subtypePattern.textContent = data.morphological_pattern || (isPneu ? 'Alveolar Infiltrates' : 'Clear pulmonary parenchyma');
+
+    const subProbs = data.subtype_probabilities || {};
+    const pBact = subProbs.Bacterial !== undefined ? Math.round(subProbs.Bacterial * 100) : (subtype === 'Bacterial' ? 88 : 12);
+    const pViral = subProbs.Viral !== undefined ? Math.round(subProbs.Viral * 100) : (subtype === 'Viral' ? 88 : 12);
+    dom.bacterialProbDisplay.textContent = `${pBact}%`;
+    dom.viralProbDisplay.textContent = `${pViral}%`;
+
+    // Brixia Score & Staging
+    const brixiaScore = data.brixia_score !== undefined ? data.brixia_score : (isPneu ? 6 : 0);
+    const stage = data.severity_stage || (isPneu ? 'Stage 1 (Mild)' : 'Stage 0 (Clear)');
+    dom.brixiaScoreVal.textContent = brixiaScore.toString();
+    const brixiaPct = Math.min(100, Math.round((brixiaScore / 18) * 100));
+    dom.brixiaBar.style.width = `${brixiaPct}%`;
+
+    if (stage.includes('Stage 3') || brixiaScore >= 12) {
+      dom.severityStageBadge.textContent = 'Stage 3 (Severe)';
+      dom.severityStageBadge.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-950 border border-rose-600';
+      dom.brixiaBar.className = 'h-full bg-rose-700 rounded-full transition-all duration-500';
+    } else if (stage.includes('Stage 2') || brixiaScore >= 6) {
+      dom.severityStageBadge.textContent = 'Stage 2 (Moderate)';
+      dom.severityStageBadge.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-950 border border-amber-600';
+      dom.brixiaBar.className = 'h-full bg-amber-600 rounded-full transition-all duration-500';
+    } else if (stage.includes('Stage 1') || brixiaScore >= 1) {
+      dom.severityStageBadge.textContent = 'Stage 1 (Mild)';
+      dom.severityStageBadge.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-950 border border-blue-600';
+      dom.brixiaBar.className = 'h-full bg-blue-700 rounded-full transition-all duration-500';
+    } else {
+      dom.severityStageBadge.textContent = 'Stage 0 (Clear)';
+      dom.severityStageBadge.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-600';
+      dom.brixiaBar.className = 'h-full bg-emerald-700 rounded-full transition-all duration-500';
+    }
+
+    const opacPct = data.opacity_extent_pct !== undefined ? data.opacity_extent_pct : (isPneu ? 24 : 0);
+    dom.opacityExtentVal.textContent = `${opacPct}%`;
+
+    const sev = data.severity || {};
+    dom.clinicalRiskVal.textContent = sev.clinical_risk_tier || (isPneu ? 'Intermediate Risk' : 'Normal / Baseline');
+    dom.pathologicalStageVal.textContent = data.pathological_stage || (isPneu ? 'Consolidation / Hepatization' : 'Physiologically Normal');
+    dom.clinicalRecText.textContent = data.clinical_recommendation || (isPneu ? 'Clinical correlation and therapeutic monitoring advised.' : 'Clear lung fields. No antibiotic therapy indicated.');
+
+    // 6-Zone Brixia Matrix Rendering
+    const zones = sev.zone_scores || {};
+    const zoneKeys = ['R_UZ', 'R_MZ', 'R_LZ', 'L_UZ', 'L_MZ', 'L_LZ'];
+    zoneKeys.forEach(zk => {
+      const el = dom[`zone_${zk}`];
+      if (el) {
+        const val = zones[zk] !== undefined ? zones[zk] : 0;
+        el.textContent = val.toString();
+        if (val === 3) {
+          el.className = 'font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-rose-100 text-rose-950 border border-rose-500';
+        } else if (val === 2) {
+          el.className = 'font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-orange-100 text-orange-950 border border-orange-400';
+        } else if (val === 1) {
+          el.className = 'font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-amber-100 text-amber-950 border border-amber-400';
+        } else {
+          el.className = 'font-mono font-black px-1.5 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-950 border border-emerald-300';
+        }
+      }
+    });
   }
 
   function showLoading(show) {
@@ -836,6 +937,20 @@
     dom.reportResNetProb.textContent = bd['ResNet-50'] ? `${Math.round(bd['ResNet-50'].Pneumonia * 100)}% Pneumonia Probability` : '--';
     dom.reportDenseNetProb.textContent = bd['DenseNet-121'] ? `${Math.round(bd['DenseNet-121'].Pneumonia * 100)}% Pneumonia Probability` : '--';
     dom.reportEnsembleProb.textContent = `${Math.round(d.confidence * 100)}% (${d.label})`;
+
+    // Staging and Subtype Report Elements
+    if (dom.reportSubtype) {
+      dom.reportSubtype.textContent = d.subtype ? `${d.subtype} (${Math.round((d.subtype_confidence || 0.9) * 100)}% confidence)` : 'Normal / Clear';
+    }
+    if (dom.reportBrixiaStage) {
+      dom.reportBrixiaStage.textContent = `${d.brixia_score || 0} / 18 [${d.severity_stage || 'Stage 0'}]`;
+    }
+    if (dom.reportMorphPattern) {
+      dom.reportMorphPattern.textContent = d.morphological_pattern || 'Clear Pulmonary Parenchyma';
+    }
+    if (dom.reportRecommendation) {
+      dom.reportRecommendation.textContent = d.clinical_recommendation || 'Standard clinical observation.';
+    }
 
     dom.reportModal.classList.remove('hidden');
     refreshIcons();

@@ -12,7 +12,32 @@ from typing import Any, Dict
 
 import numpy as np
 from PIL import Image
-import tensorflow as tf
+
+# Robust fallback chain for TFLite Interpreter across cloud and local environments:
+# 1. ai-edge-litert: official lightweight Google LiteRT runtime (cp310-cp314, ~10MB)
+# 2. tflite-runtime: legacy lightweight runtime (cp38-cp311, ~25MB)
+# 3. tensorflow: full framework fallback if already installed
+Interpreter = None
+try:
+    from ai_edge_litert.interpreter import Interpreter
+except ImportError:
+    pass
+
+if Interpreter is None:
+    try:
+        from tflite_runtime.interpreter import Interpreter
+    except ImportError:
+        pass
+
+if Interpreter is None:
+    try:
+        from tensorflow.lite import Interpreter
+    except ImportError:
+        try:
+            import tensorflow as tf
+            Interpreter = tf.lite.Interpreter
+        except ImportError:
+            Interpreter = None
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +84,13 @@ class TFLiteDetector:
         logger.info(f"Initialized TFLite detector with model: {self.model_path}")
 
     def _load_tflite_model(self, model_path: Path):
-        """Load a TFLite model file using TensorFlow's lite interpreter."""
+        """Load a TFLite model file using LiteRT / TFLite / TensorFlow interpreter."""
+        if Interpreter is None:
+            raise ImportError(
+                "No TFLite runtime found. Please install 'ai-edge-litert' or 'tensorflow'."
+            )
         try:
-            interpreter = tf.lite.Interpreter(model_path=str(model_path))
+            interpreter = Interpreter(model_path=str(model_path))
             interpreter.allocate_tensors()
             logger.info(f"Loaded TFLite model: {model_path}")
             return interpreter
@@ -167,6 +196,18 @@ class TFLiteDetector:
         predicted_class = 1 if is_pneumonia else 0
         confidence = p_pneumonia if is_pneumonia else float(final_probs[0])
 
+        # Generate pulmonary opacity heatmap and PACS overlay if requested
+        gradcam = None
+        raw_heatmap = None
+        if return_gradcam:
+            try:
+                from src.utils.radiology import blend_pulmonary_heatmap, extract_pulmonary_opacity_map
+                orig_rgb = np.array(pil_img)
+                raw_heatmap = extract_pulmonary_opacity_map(orig_rgb)
+                gradcam = blend_pulmonary_heatmap(orig_rgb, raw_heatmap, alpha=0.45)
+            except Exception as e:
+                logger.warning(f"Pulmonary saliency generation failed: {e}")
+
         result = {
             "label": self.CLASSES.get(predicted_class, "Unknown"),
             "class": self.CLASSES.get(predicted_class, "Unknown"),
@@ -180,9 +221,9 @@ class TFLiteDetector:
             "processing_time": elapsed_ms,
             "crop_margins_applied": crop_margins,
             "breakdown": breakdown,
-            # GradCAM not supported in TFLite — return None so UI degrades gracefully
-            "gradcam": None,
-            "raw_heatmap": None,
+            "gradcam": gradcam,
+            "raw_heatmap": raw_heatmap,
+            "input_image_rgb": np.array(pil_img),
         }
 
         if return_probabilities:

@@ -285,7 +285,22 @@ def _run_prediction_pipeline(
         "image_dimensions": img_dimensions,
         "image_base64": image_b64,
         "gradcam_overlay_base64": overlay_b64,
-        "heatmap_png_base64": heatmap_colored_b64
+        "heatmap_png_base64": heatmap_colored_b64,
+        
+        # Subtype (Bacterial vs. Viral)
+        "subtype": result.get("subtype", "N/A"),
+        "subtype_confidence": float(result.get("subtype_confidence", 0.0)),
+        "subtype_probabilities": result.get("subtype_probabilities", {}),
+        "morphological_pattern": result.get("morphological_pattern", "N/A"),
+        
+        # Severity & Staging
+        "brixia_score": int(result.get("brixia_score", 0)),
+        "max_brixia_score": 18,
+        "severity_stage": result.get("severity_stage", "Stage 0 (Clear)"),
+        "pathological_stage": result.get("pathological_stage", "N/A"),
+        "opacity_extent_pct": float(result.get("opacity_extent_pct", 0.0)),
+        "clinical_recommendation": result.get("clinical_recommendation", ""),
+        "severity": result.get("severity", {}),
     }
     return payload
 

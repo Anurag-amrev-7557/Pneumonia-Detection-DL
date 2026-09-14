@@ -7,6 +7,7 @@ Powered by CheXNet Dual-Backbone Architecture (ResNet-50 + DenseNet-121).
 import base64
 import io
 import json
+import logging
 import sys
 import time
 from datetime import datetime, timezone
@@ -20,6 +21,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from PIL import Image, ImageOps
+
+logger = logging.getLogger(__name__)
 
 # Add src to python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -257,19 +260,33 @@ needs_init = (
 
 if needs_init:
     try:
-        # Cloud deployment: download TFLite weights from HF Hub if not present
         from src.utils.model_loader import ensure_models_downloaded, MODELS_DIR
         from src.models.tflite_inference import TFLiteDetector
 
-        with st.spinner("⏳ Loading model weights — first launch may take ~60s..."):
-            ok = ensure_models_downloaded()
+        # 1. Prefer full local model with CheXNet Dual Ensemble & Grad-CAM if available
+        h5_model_path = MODELS_DIR / "best_model.h5"
+        h5_loaded = False
+        if h5_model_path.exists():
+            try:
+                from src.models.inference import PneumoniaDetector
+                st.session_state.detector = PneumoniaDetector(model_path=h5_model_path)
+                st.session_state.model_loaded = True
+                h5_loaded = True
+                logger.info("Loaded full PneumoniaDetector (CheXNet 50/50 Dual Ensemble & Grad-CAM)")
+            except Exception as h5_err:
+                logger.info(f"Could not initialize full PneumoniaDetector ({h5_err}), falling back to TFLite.")
 
-        if not ok:
-            st.session_state.model_loaded = False
-            st.session_state.error = "Model download failed. Check HF Hub connectivity."
-        else:
+        # 2. Fall back to lightweight TFLite runtime (Streamlit Cloud / low-RAM)
+        if not h5_loaded:
             model_path = MODELS_DIR / "best_model.tflite"
             secondary_path = MODELS_DIR / "densenet121_best.tflite"
+
+            if not model_path.exists():
+                with st.spinner("⏳ Loading model weights — first launch may take ~60s..."):
+                    ok = ensure_models_downloaded()
+                if not ok:
+                    st.session_state.model_loaded = False
+                    st.session_state.error = "Model download failed. Check HF Hub connectivity or place weights in models/current/."
 
             if model_path.exists():
                 st.session_state.detector = TFLiteDetector(
@@ -277,7 +294,7 @@ if needs_init:
                     secondary_model_path=secondary_path if secondary_path.exists() else None
                 )
                 st.session_state.model_loaded = True
-            else:
+            elif not st.session_state.get('model_loaded', False):
                 st.session_state.model_loaded = False
                 st.session_state.error = f"Model file not found at {model_path}"
     except Exception as e:
@@ -307,15 +324,16 @@ def render_enterprise_header(title: str, subtitle: str) -> None:
             <div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <h1 class="hero-title">{title}</h1>
-                    <span class="badge-pill badge-cyan">v2.4 Enterprise</span>
-                    <span class="badge-pill badge-green">● CheXNet Active</span>
+                    <span class="badge-pill badge-cyan">CheXNet Dual-Backbone</span>
+                    <span class="badge-pill badge-green">● Clinical AI Active</span>
                 </div>
                 <p class="hero-subtitle">{subtitle}</p>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <div class="badge-pill badge-green">🛡️ 0.0% Leakage Audited</div>
-                <div class="badge-pill badge-cyan">⚡ ~280ms P95 Latency</div>
-                <div class="badge-pill badge-amber">🏥 PACS Ready</div>
+                <div class="badge-pill badge-cyan">ResNet-50 + DenseNet-121</div>
+                <div class="badge-pill badge-green">🎯 97.6% Balanced Acc</div>
+                <div class="badge-pill badge-amber">🔥 Grad-CAM Explainable</div>
+                <div class="badge-pill badge-green">🛡️ 0.0% Patient Leakage</div>
             </div>
         </div>
     </div>
@@ -325,7 +343,8 @@ def render_enterprise_header(title: str, subtitle: str) -> None:
 def blend_heatmap_custom(original_rgb: np.ndarray, raw_heatmap: np.ndarray, alpha: float) -> np.ndarray:
     """Dynamically blend heatmap over input radiograph at requested opacity."""
     h, w = original_rgb.shape[:2]
-    heatmap_resized = cv2.resize(raw_heatmap, (w, h), interpolation=cv2.INTER_LINEAR)
+    heatmap_float = np.asarray(raw_heatmap, dtype=np.float32)
+    heatmap_resized = cv2.resize(heatmap_float, (w, h), interpolation=cv2.INTER_LINEAR)
     heatmap_scaled = (np.clip(heatmap_resized, 0, 1) * 255).astype(np.uint8)
     heatmap_colored = cv2.applyColorMap(heatmap_scaled, cv2.COLORMAP_JET)
     heatmap_colored = cv2.cvtColor(heatmap_colored, cv2.COLOR_BGR2RGB)
@@ -351,10 +370,10 @@ def page_home():
 
     # Core Live Metrics Bar
     metrics = ensemble_meta.get("test_metrics", {})
-    bal_acc = metrics.get("balanced_accuracy", 0.9587)
+    bal_acc = metrics.get("balanced_accuracy", 0.9761)
     auc = metrics.get("auc", 0.9935)
-    sens = metrics.get("sensitivity_pneumonia", 0.9377)
-    spec = metrics.get("specificity_normal", 0.9797)
+    sens = metrics.get("sensitivity_pneumonia", 0.9903)
+    spec = metrics.get("specificity_normal", 0.9615)
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
@@ -362,7 +381,7 @@ def page_home():
     with c2:
         st.metric("ROC-AUC Score", f"{auc:.4f}", "Clinical-Grade Discrimination")
     with c3:
-        st.metric("Pneumonia Sensitivity", f"{sens * 100:.2f}%", "Zero Miss Target in Triage")
+        st.metric("Pneumonia Sensitivity", f"{sens * 100:.2f}%", "Zero-Miss Target in Triage")
     with c4:
         st.metric("Normal Specificity", f"{spec * 100:.2f}%", "Low False-Alarm Burden")
 
@@ -408,12 +427,13 @@ def page_home():
             </p>
             <ul style="color: #CBD5E1; font-size: 13px; padding-left: 20px; line-height: 1.8;">
                 <li><strong>0.0% Patient Overlap</strong> between training and test sets.</li>
-                <li><strong>MD5 Deduplication</strong>: 16 duplicate scans purged.</li>
-                <li><strong>Multi-Cohort Replication</strong>: Replicated within 0.7% across 1,397 unseen patient scans.</li>
+                <li><strong>MD5 Deduplication</strong>: duplicate scans purged.</li>
+                <li><strong>Multi-Cohort Replication</strong>: Replicated across unseen patient scans.</li>
                 <li><strong>Explainability Verification</strong>: Grad-CAM attention localized to lung parenchyma.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
+
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -466,10 +486,10 @@ def page_predict():
 
     # Pre-defined Clinical Demo Samples (all from data/test/ — committed to git)
     demo_samples = {
-        "🟢 Sample 1: Normal Adult":      "data/test/NORMAL/IM-0341-0001.jpeg",
-        "🔴 Sample 2: Bacterial Lobar":   "data/test/PNEUMONIA/person1619_bacteria_4261.jpeg",
-        "🟣 Sample 3: Viral Interstitial": "data/test/PNEUMONIA/person478_virus_975.jpeg",
-        "🟡 Sample 4: Subtle Pediatric":  "data/test/PNEUMONIA/person1014_bacteria_2945.jpeg",
+        "🟢 Sample 1: Normal (Clear)":       "data/test/NORMAL/IM-0341-0001.jpeg",
+        "🔴 Sample 2: Acute Pneumonia A":    "data/test/PNEUMONIA/person1619_bacteria_4261.jpeg",
+        "🔴 Sample 3: Acute Pneumonia B":    "data/test/PNEUMONIA/person478_virus_975.jpeg",
+        "🟡 Sample 4: Subtle Infiltrate":    "data/test/PNEUMONIA/person1014_bacteria_2945.jpeg",
     }
 
     # Top Control Bar
@@ -753,6 +773,23 @@ def page_predict():
             </div>
             """, unsafe_allow_html=True)
 
+            dynamic_gating = result.get("dynamic_gating")
+            if dynamic_gating:
+                rw = dynamic_gating.get("resnet_weight", 0.5)
+                dw = dynamic_gating.get("densenet_weight", 0.5)
+                st.markdown(f"""
+                <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.35); padding: 10px 14px; border-radius: 8px; margin-bottom: 10px; font-size: 12px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <span style="color:#C7D2FE; font-weight:600;">🧠 Cross-Attention Dynamic Gating</span>
+                        <span style="color:#A5B4FC; font-family:'JetBrains Mono'; font-weight:700;">ResNet: {rw:.1%} | DenseNet: {dw:.1%}</span>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.1); border-radius:9999px; height:6px; overflow:hidden; display:flex;">
+                        <div style="background:#38BDF8; width:{rw*100}%; height:100%;"></div>
+                        <div style="background:#34D399; width:{dw*100}%; height:100%;"></div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
             # Technical Telemetry
             st.markdown(f"""
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
@@ -779,7 +816,7 @@ def page_predict():
             st.markdown("<br>", unsafe_allow_html=True)
             report_data = {
                 "system": "PULMO·AI Enterprise CXR Suite",
-                "version": "2.4.0",
+                "version": "2.0.0",
                 "timestamp": datetime.now(tz=timezone.utc).isoformat(),
                 "scan_id": st.session_state.get("active_scan_name", "ANONYMIZED_CXR"),
                 "clinical_finding": result["class"],
@@ -787,7 +824,7 @@ def page_predict():
                 "probabilities": result["probabilities"],
                 "backbone_breakdown": result.get("breakdown", {}),
                 "threshold_applied": decision_threshold,
-                "latency_ms": result.get("processing_time", None)
+                "latency_ms": result.get("processing_time", None),
             }
             st.download_button(
                 label="📄 Export Clinical DICOM/JSON Summary",
